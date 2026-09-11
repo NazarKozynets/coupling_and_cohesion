@@ -7,6 +7,9 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { ReportsModule } from './modules/reports/reports.module';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { WorkspacesModule } from './modules/workspaces/workspaces.module';
+import { MembersModule } from './modules/members/members.module';
+import { ProjectsModule } from './modules/projects/projects.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -16,8 +19,11 @@ import { WorkspacesModule } from './modules/workspaces/workspaces.module';
     ReportsModule,
     SubscriptionsModule,
     WorkspacesModule,
+    MembersModule,
+    ProjectsModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

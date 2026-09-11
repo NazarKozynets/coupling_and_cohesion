@@ -1,12 +1,16 @@
 import { Module } from '@nestjs/common';
 import { SUBSCRIPTION_REPOSITORY } from './domain/repositories/subscription.repository';
-import { PostgresSubscriptionRepository } from './infrastructure/persistence/postgres-subscription.repository';
 import { CreateSubscriptionService } from './application/use-cases/create-subscription.service';
 import { ActivateSubscriptionService } from './application/use-cases/activate-subscription.service';
 import { ImitateUserService } from './application/services/imitate-user.service';
 import { WorkspacesModule } from '../workspaces/workspaces.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { BillingModule } from '../billing/billing.module';
+import { InMemorySubscriptionRepository } from './infrastructure/persistence/in-memory-subscription.repository';
+import { WorkspaceQueryService } from '../workspaces/application/services/workspace-query.service';
+import { WORKSPACE_REPOSITORY } from '../workspaces/domain/repositories/workspace.repository';
+import { InMemoryWorkspaceRepository } from '../workspaces/infrastructure/persistence/in-memory-workspace.repository';
+import { GetSubscriptionPort } from './application/ports/get-subscription.port';
 
 @Module({
     imports: [
@@ -18,11 +22,17 @@ import { BillingModule } from '../billing/billing.module';
     providers: [
         {
             provide: SUBSCRIPTION_REPOSITORY,
-            useClass: PostgresSubscriptionRepository
+            useClass: InMemorySubscriptionRepository,
+        },
+        {
+            provide: WORKSPACE_REPOSITORY,
+            useClass: InMemoryWorkspaceRepository,
         },
         CreateSubscriptionService,
         ActivateSubscriptionService,
         ImitateUserService,
+        WorkspaceQueryService,
+        GetSubscriptionPort,
     ],
     exports: [
         GetSubscriptionPort,

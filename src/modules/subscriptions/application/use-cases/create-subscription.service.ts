@@ -1,16 +1,16 @@
 import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException } from "@nestjs/common";
-import { GetWorkspacePort } from "src/modules/workspaces/application/ports/get-workspace.port";
 import { SUBSCRIPTION_PRICES, SubscriptionPlan, SubscriptionStatus } from "../../domain/types/subscription.types";
 import { SUBSCRIPTION_REPOSITORY, type SubscriptionRepository } from "../../domain/repositories/subscription.repository";
 import { CreateSubscriptionInput } from "../../infrastructure/persistence/dto/create-subscription.dto";
 import { ImitateUserService } from "../services/imitate-user.service";
+import { WorkspaceQueryService } from "src/modules/workspaces/application/services/workspace-query.service";
 
 @Injectable()
 export class CreateSubscriptionService {
     constructor(
         @Inject(SUBSCRIPTION_REPOSITORY)
         private readonly subscriptionRepository: SubscriptionRepository,
-        private readonly getWorkspaceService: GetWorkspacePort,
+        private readonly workspaceQueryService: WorkspaceQueryService,
 
 
         // Приметка: в задании было указано, что оплата должна пройти автоматически, 
@@ -26,7 +26,7 @@ export class CreateSubscriptionService {
         const { workspaceId, subscriptionPlan } = payload;
 
         // 1. Поиск workspace 
-        const workspace = await this.getWorkspaceService.exec(workspaceId);
+        const workspace = await this.workspaceQueryService.getSubscriptionContext(workspaceId);
 
         if (!workspace) {
             throw new NotFoundException("Workspace not found");
@@ -60,7 +60,7 @@ export class CreateSubscriptionService {
             // поэтому я буду иммитировать поведение реального человека и через таймаут вызову другой сервис,
             // который якобы является жизненным пайплайном подписки в момент успешной оплаты
             // В РЕАЛЬНОЙ ЖИЗНИ ТАК Я БЫ НЕ ДЕЛАЛ. ЭТО БЫЛИ БЫ ДВА ОТДЕЛЬНЫХ ENDPOINTS.
-            await this.imitateUserService.exec();
+            await this.imitateUserService.exec(createdSubscription.id);
 
             // Избежать такого можно было бы, подключив Observer.
             // В таком случае я бы создал событие и подписал бы на него что-то, что по итогу

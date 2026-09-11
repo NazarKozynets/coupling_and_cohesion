@@ -1,16 +1,18 @@
 import { Module } from '@nestjs/common';
-import { GetWorkspacePort } from './application/ports/get-workspace.port';
+import { WorkspaceQueryService } from './application/services/workspace-query.service';
 import { WORKSPACE_REPOSITORY } from './domain/repositories/workspace.repository';
-import { PostgresWorkspaceRepository } from './infrastructure/persistence/postgres-workspace.repository';
+import { InMemoryWorkspaceRepository } from './infrastructure/persistence/in-memory-workspace.repository';
 
 @Module({
     providers: [
         {
             provide: WORKSPACE_REPOSITORY,
-            useClass: PostgresWorkspaceRepository,
+            useClass: InMemoryWorkspaceRepository,
         },
-        GetWorkspacePort,
+        WorkspaceQueryService,
     ],
-    exports: [GetWorkspacePort],
+    exports: [
+        WorkspaceQueryService,
+    ],
 })
 export class WorkspacesModule { }

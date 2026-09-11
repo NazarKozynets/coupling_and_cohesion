@@ -1,20 +1,18 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
-import { type SubscriptionRepository } from "../../domain/repositories/subscription.repository";
+import { ForbiddenException, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { SUBSCRIPTION_REPOSITORY, type SubscriptionRepository } from "../../domain/repositories/subscription.repository";
 import { SubscriptionStatus } from "../../domain/types/subscription.types";
 import { NotificationSubscriptionService } from "src/modules/notifications/application/services/send-subscription.service";
+import { WorkspaceQueryService } from "src/modules/workspaces/application/services/workspace-query.service";
 
 @Injectable()
 export class ActivateSubscriptionService {
-    // ВСЁ ЭТО Я БЫ ДЕЛАЛ В ОДНОЙ ТРАНЗАКЦИИ ДЛЯ ИДЕМПОТЕНТНОСТИ. 
-    // НО ДЛЯ ВЫПОЛНЕНИЯ ЭТОГО ЗАДАНИЯ Я НЕ ХОЧУ ЕЩЁ ПОЛ ЧАСА НАСТРАИВАТЬ РЕПОЗИТОРИИ И ПОДКЛЮЧАТЬ БД
+    // ВСЁ ЭТО Я БЫ ДЕЛАЛ В ОДНОЙ ТРАНЗАКЦИИ ДЛЯ АТОМАРНОСТИ. 
 
     constructor(
+        @Inject(SUBSCRIPTION_REPOSITORY)
         private readonly subscriptionRepository: SubscriptionRepository,
-
-        // Подключаю SendSubscriptionService из модуля notifications.
-        // Можно ещё сделать через паттерн Observer и подключить очереди, но так как приложение не большое и в нём нет сложных переплетений,
-        // то я позволю себе не тратить время.
         private readonly notificationSubscriptionService: NotificationSubscriptionService,
+        private readonly getWorkspaceInfoService: WorkspaceQueryService,
     ) { }
 
     // Возвращает true, если подписка успешно активирована
@@ -44,9 +42,22 @@ export class ActivateSubscriptionService {
             // sendSubscriptionActivated будет принимать workspaceId вместо userId.
             // В таком случае, мне не придется импортировать в ActivateSubscriptionService репозиторий workspace для того,
             // чтобы получить ownerId - это уже минус один запрос и меньше coupling. 
+
+
+            // UPDATE: Решил всё таки получать данные в этом сервисе, чтобы модуль нотификаций работал с уже готовой информацией и не знал о приложении в принципе ничего.
+            // Его задача - отправлять нотификации, а не ходить в бд за информацией других модулей. 
+            // Хотя в теории можно было бы оставить для него возможность ходить в бд за данными модели юзера. Потому что так или иначе ему нужно будет получать почту. 
+            // Наверное так и сделаю. Будет порт для получения имейла и модуль нотификаций будет использовать его. В таком случае в subcsription module и остальных модулях,
+            // которые должны вызывать notification services, не будут знать о модуле юзера (если конечно он никак иначе не будет с ними переплетаться). 
+            const workspaceInfo = await this.getWorkspaceInfoService.getSubscriptionContext(subscription.workspaceId);
+            if (!workspaceInfo) {
+                throw new NotFoundException("Workspace not found");
+            }
+
             this.notificationSubscriptionService.sendSubscriptionActivated({
-                workspaceId: subscription.workspaceId,
-                subscriptionPlan: subscription.plan,
+                workspaceName: workspaceInfo.workspaceName,
+                userId: workspaceInfo.ownerId,
+                subscriptionPlan: subscription.plan as string,
             });
         }
 

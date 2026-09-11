@@ -1,31 +1,52 @@
 import { Injectable } from "@nestjs/common";
-import { SubscriptionPolicy } from "src/modules/subscriptions/domain/policies/subscription.policy";
+import { GetMemberPort } from "src/modules/members/application/ports/get-member.port";
+import { GetProjectPort } from "src/modules/projects/application/get-project.port";
+import { GetSubscriptionPort } from "src/modules/subscriptions/application/ports/get-subscription.port";
+import { SUBSCRIPTION_POLICIES } from "src/modules/subscriptions/domain/policies/subscription.policy";
 
+// По итогу я решил использовать WorkspaceAccessService как некую конечную точку сбора разных портов.
+// Сервис получает данные из портов и проверять access.
 @Injectable()
 export class WorkspaceAccessService {
     constructor(
+        private readonly getSubscriptionPort: GetSubscriptionPort,
+        private readonly getProjectPort: GetProjectPort,
+        private readonly getMemberPort: GetMemberPort,
     ) { }
 
-    // Чтобы не фетчить каждый раз данные подписки, можно хранить их вместе с контекстом юзера.
-    // Но в задании этого не было указано, поэтому я не делаю так.
-    //
-    // UPDATE 1: Я попробовал создать какой-нибудь класс в Subscription module для получения policy, 
-    // Но проблема в том, что такой вариант приведет к тому что в access module нужно будет импортировать все остальные модули
-    // так как они импортированы в subscription module
-    //
-    // UPDATE 2: Я пришел к выводу, что проще импортировать в WorkspaceAccessService репозиторий subscription, 
-    // вместо того, чтобы выдумывать громоздное приложение с кучей портов и мапперов только ради этого класса.
-    private getSubscriptionPolicy(subscription): SubscriptionPolicy {
-
-    }
-
     async canCreateProject(workspaceId: string): Promise<boolean> {
-        
+        const plan = await this.getSubscriptionPort.getPlanByWorkspaceId(workspaceId);
+        const currentProjectsAmount = await this.getProjectPort.countWorkspaceProjects(workspaceId);
+
+        const maxAmount = SUBSCRIPTION_POLICIES[plan].maxProjects;
+
+        if (maxAmount === 'unlimited' || currentProjectsAmount < maxAmount) {
+            return true;
+        }
+
+        return false;
     };
 
-    async canInviteMember(workspaceId: string): Promise<boolean> { return false };
+    async canInviteMember(workspaceId: string): Promise<boolean> {
+        const plan = await this.getSubscriptionPort.getPlanByWorkspaceId(workspaceId);
+        const currentMembersAmount = await this.getMemberPort.countMembersInWorkspace(workspaceId);
 
-    async hasAnalytics(workspaceId: string): Promise<boolean> { return false };
+        const maxAmount = SUBSCRIPTION_POLICIES[plan].maxMembers;
 
-    async hasPrioritySupport(workspaceId: string): Promise<boolean> { return false };
+        if (maxAmount === 'unlimited' || currentMembersAmount < maxAmount) {
+            return true;
+        }
+
+        return false;
+    };
+
+    async hasAnalytics(workspaceId: string): Promise<boolean> {
+        const plan = await this.getSubscriptionPort.getPlanByWorkspaceId(workspaceId);
+        return SUBSCRIPTION_POLICIES[plan].analyticsAvailable;
+    };
+
+    async hasPrioritySupport(workspaceId: string): Promise<boolean> {
+        const plan = await this.getSubscriptionPort.getPlanByWorkspaceId(workspaceId);
+        return SUBSCRIPTION_POLICIES[plan].prioritySupport;
+    };
 }

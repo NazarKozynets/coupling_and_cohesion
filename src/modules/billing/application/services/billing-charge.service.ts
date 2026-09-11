@@ -18,8 +18,7 @@ export class BillingChargeService {
     subscriptionId: string;
     amountUsd: number;
   }): Promise<void> {
-    // считаем, что payment provider уже реализован
-
-    
+    const { workspaceId, subscriptionId, amountUsd } = input;
+    console.log(`workspaceId: ${workspaceId}, subscriptionId: ${subscriptionId}, amountUsd: ${amountUsd}`);
   }
 }
