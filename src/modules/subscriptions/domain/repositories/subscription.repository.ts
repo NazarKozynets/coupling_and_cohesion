@@ -14,5 +14,5 @@ export interface SubscriptionRepository {
     activateSubscription(subscriptionId: string): Promise<SubscriptionStatus | null>;
 
     countAllByStatus(status: SubscriptionStatus): Promise<number>;
-    countPlanByStatus(plan: SubscriptionPlan, status: SubscriptionStatus): Promise<number>;
+    findManyByPlanAndStatus(plan: SubscriptionPlan, status: SubscriptionStatus): Promise<Subscription[]>;
 }

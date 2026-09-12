@@ -20,7 +20,7 @@ export class ImitateUserService {
     ) { }
 
     // subcsriptionId тут как заглушка
-    async exec(payload: CreateSubscriptionInput, subscriptionId: string) {
+    async exec(payload: CreateSubscriptionInput) {
         // Хоть это и сервис, которого не будет в реальном приложении, я всё равно не хочу сейчас делать
         // фетч запрос на получения subscription, workspace ради того, чтобы передать нужную инфу в BillingChargeService.
         // Потому что в таком случае получится, что в сервисе ImitateUserService уже минимум два запроса к бд, и в ActivateSubscriptionService ещё несколько.
@@ -33,20 +33,20 @@ export class ImitateUserService {
         // UPDATE: Я всё таки сделаю отдельный запрос для получения subscription, чтобы затестить happy-path.
 
         // UPDATE 2: Этот сервис теперь будет точкой входа для нашего happy-path. 
-        const subscriptionPlan = await this.createSubscriptionService.exec(payload);
+        const createdSubscription = await this.createSubscriptionService.exec(payload);
 
-        const subscription = await this.subscriptionRepository.findOneById(subscriptionId);
+        const subscription = await this.subscriptionRepository.findOneById(createdSubscription.subscriptionId);
         if (!subscription) {
             throw new NotFoundException('Subscription not found');
         }
 
-        if (subscriptionPlan !== SubscriptionPlan.FREE) {
+        if (createdSubscription.subscriptionPlan !== SubscriptionPlan.FREE) {
             await this.billingChargeService.charge({
-                subscriptionId: subscriptionId,
+                subscriptionId: createdSubscription.subscriptionId,
                 workspaceId: subscription.workspaceId,
                 amountUsd: subscription.monthlyPriceUsd,
             });
-            await this.activateSubscriptionService.exec(subscriptionId);
         }
+        await this.activateSubscriptionService.exec(createdSubscription.subscriptionId);
     }
 }

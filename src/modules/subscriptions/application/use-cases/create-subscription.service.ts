@@ -12,7 +12,7 @@ export class CreateSubscriptionService {
         private readonly workspaceQueryService: WorkspaceQueryService,
     ) { }
 
-    async exec(payload: CreateSubscriptionInput): Promise<SubscriptionPlan> {
+    async exec(payload: CreateSubscriptionInput): Promise<{ subscriptionId: string, subscriptionPlan: SubscriptionPlan }> {
         // *Я не буду валидировать айдишник или выбранный план сейчас, чтобы не тратить время
         // Но знай - в реальном приложении я бы это сделал
         const { workspaceId, subscriptionPlan } = payload;
@@ -48,7 +48,10 @@ export class CreateSubscriptionService {
         );
 
         if (createdSubscription) {
-            return createdSubscription.plan;
+            return {
+                subscriptionId: createdSubscription.id,
+                subscriptionPlan: createdSubscription.plan,
+            };
         } else {
             throw new InternalServerErrorException("Something went wrong");
         }

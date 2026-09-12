@@ -82,7 +82,7 @@ export class PostgresSubscriptionRepository implements SubscriptionRepository {
         return 0;
     }
 
-    async countPlanByStatus(plan: SubscriptionPlan, status: SubscriptionStatus): Promise<number> {
-        return 0;
+    async findManyByPlanAndStatus(plan: SubscriptionPlan, status: SubscriptionStatus): Promise<Subscription[]> {
+        return [];
     }
 }

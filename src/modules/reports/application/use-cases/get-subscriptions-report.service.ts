@@ -23,8 +23,12 @@ export class GetSubscriptionsReportService {
 
         for (const [plan, amount] of Object.entries(data.plansAmount)) {
             activeSubscriptions += amount;
-            monthlyRevenueUsd += data.plansPrices[plan] * amount;
+            monthlyRevenueUsd += data.monthlyRevenueUsd[plan];
         }
+
+        // UPDATE: Может ты ещё не понял. Когда я что-то разрабатываю, то сразу продумываю что будет в ситуации, когда через полгода
+        // понадобится не просто добавить одно поле, а в некотором роде изменить структуру данных. 
+        // Именно поэтому я оставляю некоторые просчёты сервису GetSubscriptionsReportService.
 
         return {
             activeSubscriptions,

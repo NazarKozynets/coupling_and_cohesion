@@ -2,7 +2,7 @@ import { SubscriptionPlan } from "src/modules/subscriptions/domain/types/subscri
 
 export type SubscriptionsReportPortData = {
     plansAmount: Record<SubscriptionPlan, number>;
-    plansPrices: Record<SubscriptionPlan, number>;
+    monthlyRevenueUsd: Record<SubscriptionPlan, number>;
 }
 
 export type ResultSubscriptionsReport = {

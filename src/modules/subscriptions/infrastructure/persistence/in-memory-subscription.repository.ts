@@ -109,7 +109,7 @@ export class InMemorySubscriptionRepository implements SubscriptionRepository {
     return this.subscriptions.filter(s => s.status === status)?.length ?? 0;
   }
 
-  async countPlanByStatus(plan: SubscriptionPlan, status: SubscriptionStatus): Promise<number> {
-    return this.subscriptions.filter(s => s.plan === plan && s.status === status)?.length ?? 0;
+  async findManyByPlanAndStatus(plan: SubscriptionPlan, status: SubscriptionStatus): Promise<Subscription[]> {
+    return this.subscriptions.filter(s => s.plan === plan && s.status === status);
   }
 }
