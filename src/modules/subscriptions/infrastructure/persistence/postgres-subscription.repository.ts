@@ -77,4 +77,12 @@ export class PostgresSubscriptionRepository implements SubscriptionRepository {
     activateSubscription(subscriptionId: string): Promise<SubscriptionStatus> {
         return Promise.resolve(SubscriptionStatus.ACTIVE);
     }
+
+    async countAllByStatus(status: SubscriptionStatus): Promise<number> {
+        return 0;
+    }
+
+    async countPlanByStatus(plan: SubscriptionPlan, status: SubscriptionStatus): Promise<number> {
+        return 0;
+    }
 }

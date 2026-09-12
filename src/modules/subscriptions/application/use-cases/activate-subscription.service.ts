@@ -1,8 +1,9 @@
-import { ForbiddenException, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { ForbiddenException, Inject, Injectable, InternalServerErrorException, NotFoundException } from "@nestjs/common";
 import { SUBSCRIPTION_REPOSITORY, type SubscriptionRepository } from "../../domain/repositories/subscription.repository";
 import { SubscriptionStatus } from "../../domain/types/subscription.types";
 import { NotificationSubscriptionService } from "src/modules/notifications/application/services/send-subscription.service";
 import { WorkspaceQueryService } from "src/modules/workspaces/application/services/workspace-query.service";
+import { SubscriptionNotificationMapper } from "../../presentation/notification.mapper";
 
 @Injectable()
 export class ActivateSubscriptionService {
@@ -13,6 +14,7 @@ export class ActivateSubscriptionService {
         private readonly subscriptionRepository: SubscriptionRepository,
         private readonly notificationSubscriptionService: NotificationSubscriptionService,
         private readonly getWorkspaceInfoService: WorkspaceQueryService,
+        private readonly subscriptionNotificationMapper: SubscriptionNotificationMapper,
     ) { }
 
     // Возвращает true, если подписка успешно активирована
@@ -32,6 +34,9 @@ export class ActivateSubscriptionService {
 
         // 3. Обновление статуса
         const updatedStatus = await this.setActive(subscriptionId);
+        if (!updatedStatus) {
+            throw new InternalServerErrorException("Something went wrong");
+        }
 
         // 4. Если статус был успешно обновлён, то отправляю уведомление
         if (updatedStatus === SubscriptionStatus.ACTIVE) {
@@ -54,11 +59,10 @@ export class ActivateSubscriptionService {
                 throw new NotFoundException("Workspace not found");
             }
 
-            this.notificationSubscriptionService.sendSubscriptionActivated({
-                workspaceName: workspaceInfo.workspaceName,
-                userId: workspaceInfo.ownerId,
-                subscriptionPlan: subscription.plan as string,
-            });
+            const notificationContext = this.subscriptionNotificationMapper.activated(subscription, workspaceInfo);
+
+            // На текущий момент тут нет очередей и тд. На проде я бы добавил.
+            await this.notificationSubscriptionService.sendSubscriptionActivated(notificationContext);
         }
 
         return updatedStatus;
@@ -75,7 +79,7 @@ export class ActivateSubscriptionService {
     // Только на ACTIVE, потому что это сервис для активации, а не глобального изменения статуса.
     //
     // Возвращает обновленный статус. На случай если на стороне бд что-то пошло не так и можно было перепроверить точно ли изменился статус. 
-    private setActive(subscriptionId: string): Promise<SubscriptionStatus> {
+    private setActive(subscriptionId: string): Promise<SubscriptionStatus | null> {
         return this.subscriptionRepository.activateSubscription(subscriptionId);
     }
 }

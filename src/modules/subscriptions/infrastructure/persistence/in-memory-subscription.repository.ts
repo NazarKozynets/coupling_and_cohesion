@@ -66,52 +66,50 @@ export class InMemorySubscriptionRepository implements SubscriptionRepository {
 
   async findOneById(
     subscriptionId: string,
-  ): Promise<Subscription> {
+  ): Promise<Subscription | null> {
     const subscription = this.subscriptions.find(
       (subscription) => subscription.id === subscriptionId,
     );
 
-    if (!subscription) {
-      throw new Error(
-        `Subscription with id ${subscriptionId} not found`,
-      );
-    }
-
-    return subscription;
+    return subscription ?? null;
   }
 
   async findOneByWorkspaceId(
     workspaceId: string,
-  ): Promise<Subscription> {
+  ): Promise<Subscription | null> {
     const subscription = this.subscriptions.find(
       (subscription) =>
         subscription.workspaceId === workspaceId,
     );
 
-    if (!subscription) {
-      throw new Error(
-        `Subscription for workspace ${workspaceId} not found`,
-      );
-    }
-
-    return subscription;
+    return subscription ?? null;
   }
 
   async updateOneById(
     subscriptionId: string,
-  ): Promise<Subscription> {
+  ): Promise<Subscription | null> {
     return this.findOneById(subscriptionId);
   }
 
   async activateSubscription(
     subscriptionId: string,
-  ): Promise<SubscriptionStatus> {
+  ): Promise<SubscriptionStatus | null> {
     const subscription =
       await this.findOneById(subscriptionId);
+
+    if (!subscription) return null;
 
     subscription.status = SubscriptionStatus.ACTIVE;
     subscription.activatedAt = new Date();
 
     return subscription.status;
+  }
+
+  async countAllByStatus(status: SubscriptionStatus): Promise<number> {
+    return this.subscriptions.filter(s => s.status === status)?.length ?? 0;
+  }
+
+  async countPlanByStatus(plan: SubscriptionPlan, status: SubscriptionStatus): Promise<number> {
+    return this.subscriptions.filter(s => s.plan === plan && s.status === status)?.length ?? 0;
   }
 }

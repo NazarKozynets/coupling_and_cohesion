@@ -11,6 +11,8 @@ import { WorkspaceQueryService } from '../workspaces/application/services/worksp
 import { WORKSPACE_REPOSITORY } from '../workspaces/domain/repositories/workspace.repository';
 import { InMemoryWorkspaceRepository } from '../workspaces/infrastructure/persistence/in-memory-workspace.repository';
 import { GetSubscriptionPort } from './application/ports/get-subscription.port';
+import { SubscriptionNotificationMapper } from './presentation/notification.mapper';
+import { PrepareSubscriptionsReportPort } from './application/ports/prepare-report.port';
 
 @Module({
     imports: [
@@ -33,9 +35,12 @@ import { GetSubscriptionPort } from './application/ports/get-subscription.port';
         ImitateUserService,
         WorkspaceQueryService,
         GetSubscriptionPort,
+        SubscriptionNotificationMapper,
+        PrepareSubscriptionsReportPort
     ],
     exports: [
         GetSubscriptionPort,
+        PrepareSubscriptionsReportPort,
     ]
 })
 export class SubscriptionsModule { }
