@@ -13,6 +13,8 @@ export type SubscriptionProps = {
   status: SubscriptionStatus;
   monthlyPriceUsd: number;
   maxProjectsOverride?: number;
+  maxMembersOverride?: number;
+  analyticsAvailableOverride?: boolean;
   activatedAt: Date | null;
   cancelledAt: Date | null;
   createdAt: Date;
@@ -44,6 +46,12 @@ export class Subscription {
   @Column({ type: 'int', nullable: true })
   maxProjectsOverride?: number | null;
 
+  @Column({ type: 'int', nullable: true })
+  maxMembersOverride?: number | null;
+
+  @Column({ type: 'boolean', nullable: true })
+  analyticsAvailableOverride?: boolean | null;
+
   @Column({ nullable: true })
   activatedAt: Date | null = null;
 
@@ -59,6 +67,9 @@ export class Subscription {
     this.plan = props.plan;
     this.status = props.status;
     this.monthlyPriceUsd = props.monthlyPriceUsd;
+    this.maxProjectsOverride = props.maxProjectsOverride;
+    this.maxMembersOverride = props.maxMembersOverride;
+    this.analyticsAvailableOverride = props.analyticsAvailableOverride;
     this.activatedAt = props.activatedAt;
     this.cancelledAt = props.cancelledAt;
     this.createdAt = props.createdAt;

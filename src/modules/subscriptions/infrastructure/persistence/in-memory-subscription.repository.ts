@@ -23,6 +23,18 @@ export class InMemorySubscriptionRepository implements SubscriptionRepository {
     }),
 
     new Subscription({
+      id: 'subscription-free-with-analytics-override',
+      workspaceId: 'workspace-free',
+      plan: SubscriptionPlan.FREE,
+      status: SubscriptionStatus.ACTIVE,
+      monthlyPriceUsd: 0,
+      analyticsAvailableOverride: true,
+      activatedAt: new Date(),
+      cancelledAt: null,
+      createdAt: new Date(),
+    }),
+
+    new Subscription({
       id: 'subscription-pro',
       workspaceId: 'workspace-pro',
       plan: SubscriptionPlan.PRO,
@@ -40,6 +52,7 @@ export class InMemorySubscriptionRepository implements SubscriptionRepository {
       status: SubscriptionStatus.ACTIVE,
       monthlyPriceUsd: 29,
       maxProjectsOverride: 100,
+      maxMembersOverride: 23,
       activatedAt: new Date(),
       cancelledAt: null,
       createdAt: new Date(),

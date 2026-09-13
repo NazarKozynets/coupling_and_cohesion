@@ -13,6 +13,7 @@ import { InMemoryWorkspaceRepository } from '../workspaces/infrastructure/persis
 import { GetSubscriptionPort } from './application/ports/get-subscription.port';
 import { SubscriptionNotificationMapper } from './presentation/notification.mapper';
 import { PrepareSubscriptionsReportPort } from './application/ports/prepare-report.port';
+import { GetSubscriptionEntitlementsPort } from './application/ports/get-subscription-entitlements.port';
 
 @Module({
     imports: [
@@ -36,11 +37,13 @@ import { PrepareSubscriptionsReportPort } from './application/ports/prepare-repo
         WorkspaceQueryService,
         GetSubscriptionPort,
         SubscriptionNotificationMapper,
-        PrepareSubscriptionsReportPort
+        PrepareSubscriptionsReportPort,
+        GetSubscriptionEntitlementsPort
     ],
     exports: [
         GetSubscriptionPort,
         PrepareSubscriptionsReportPort,
+        GetSubscriptionEntitlementsPort,
     ]
 })
 export class SubscriptionsModule { }
