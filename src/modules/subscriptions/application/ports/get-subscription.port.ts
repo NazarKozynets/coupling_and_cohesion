@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { SUBSCRIPTION_REPOSITORY, type SubscriptionRepository } from "../../domain/repositories/subscription.repository";
 import { SubscriptionPlan } from "../../domain/types/subscription.types";
 import { SUBSCRIPTION_POLICIES } from "../../domain/policies/subscription.policy";
@@ -34,12 +34,12 @@ export class GetSubscriptionPort {
     async getMaxProjects(workspaceId: string): Promise<number | 'unlimited'> {
         const subscription = await this.subscriptionRepository.findOneByWorkspaceId(workspaceId);
         if (!subscription) {
-            throw new NotFoundException("Subscription not found");
+            return SUBSCRIPTION_POLICIES[SubscriptionPlan.FREE].maxProjects;
         }
 
         const maxProjectsOverride = subscription?.maxProjectsOverride;
 
-        if (maxProjectsOverride) {
+        if (maxProjectsOverride !== null && maxProjectsOverride !== undefined) {
             return maxProjectsOverride;
         }
 
