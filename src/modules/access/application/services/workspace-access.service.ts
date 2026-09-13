@@ -15,12 +15,10 @@ export class WorkspaceAccessService {
     ) { }
 
     async canCreateProject(workspaceId: string): Promise<boolean> {
-        const plan = await this.getSubscriptionPort.getPlanByWorkspaceId(workspaceId);
+        const maxProjects = await this.getSubscriptionPort.getMaxProjects(workspaceId);
         const currentProjectsAmount = await this.getProjectPort.countWorkspaceProjects(workspaceId);
 
-        const maxAmount = SUBSCRIPTION_POLICIES[plan].maxProjects;
-
-        if (maxAmount === 'unlimited' || currentProjectsAmount < maxAmount) {
+        if (maxProjects === 'unlimited' || currentProjectsAmount < maxProjects) {
             return true;
         }
 

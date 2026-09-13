@@ -34,6 +34,18 @@ export class InMemorySubscriptionRepository implements SubscriptionRepository {
     }),
 
     new Subscription({
+      id: 'subscription-pro',
+      workspaceId: 'workspace-pro-with-override',
+      plan: SubscriptionPlan.PRO,
+      status: SubscriptionStatus.ACTIVE,
+      monthlyPriceUsd: 29,
+      maxProjectsOverride: 100,
+      activatedAt: new Date(),
+      cancelledAt: null,
+      createdAt: new Date(),
+    }),
+
+    new Subscription({
       id: 'subscription-business',
       workspaceId: 'workspace-business',
       plan: SubscriptionPlan.BUSINESS,

@@ -12,6 +12,7 @@ export type SubscriptionProps = {
   plan: SubscriptionPlan;
   status: SubscriptionStatus;
   monthlyPriceUsd: number;
+  maxProjectsOverride?: number;
   activatedAt: Date | null;
   cancelledAt: Date | null;
   createdAt: Date;
@@ -39,6 +40,9 @@ export class Subscription {
 
   @Column({ type: 'integer' })
   monthlyPriceUsd!: number;
+
+  @Column({ type: 'int', nullable: true })
+  maxProjectsOverride?: number | null;
 
   @Column({ nullable: true })
   activatedAt: Date | null = null;
